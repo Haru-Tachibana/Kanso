@@ -14,13 +14,16 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isSignUp = false;
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -30,6 +33,28 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isSignUp = !_isSignUp;
     });
+  }
+
+  void _showForgotPasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Forgot Password'),
+          content: const Text(
+            'Password reset functionality will be available soon. For now, please contact support if you need help accessing your account.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _handleAuth() async {
@@ -44,9 +69,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Create mock user for demo
     final user = User(
-      id: '1',
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       email: _emailController.text,
-      name: _emailController.text.split('@')[0],
+      name: _isSignUp ? _nameController.text : _emailController.text.split('@')[0],
       createdAt: DateTime.now(),
     );
 
@@ -96,6 +121,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 64),
 
+                // Username field (only for sign up)
+                if (_isSignUp) ...[
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Username',
+                      hintText: 'Enter your username',
+                    ),
+                    validator: _isSignUp ? (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your username';
+                      }
+                      if (value.length < 2) {
+                        return 'Username must be at least 2 characters';
+                      }
+                      return null;
+                    } : null,
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
                 // Email field
                 TextFormField(
                   controller: _emailController,
@@ -119,10 +165,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Password field
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
                     labelText: 'Password',
                     hintText: 'Enter your password',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        color: AppTheme.mediumGray,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -141,6 +198,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleAuth,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.lightGray,
+                      foregroundColor: AppTheme.pureBlack,
+                    ),
                     child: _isLoading
                         ? const SizedBox(
                             height: 20,
@@ -148,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                AppTheme.pureWhite,
+                                AppTheme.pureBlack,
                               ),
                             ),
                           )
@@ -162,6 +223,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
+
+                // Forgot password (only for sign in)
+                if (!_isSignUp) ...[
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _showForgotPasswordDialog,
+                      child: Text(
+                        'Forgot Password?',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.mediumGray,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Toggle mode
                 TextButton(

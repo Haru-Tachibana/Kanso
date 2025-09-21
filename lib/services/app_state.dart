@@ -8,6 +8,7 @@ class AppState extends ChangeNotifier {
   List<DeclutterItem> _keptItems = [];
   List<DeclutterItem> _discardedItems = [];
   bool _isChinese = false;
+  bool _sessionCompleted = false;
 
   // Getters
   User? get currentUser => _currentUser;
@@ -18,6 +19,11 @@ class AppState extends ChangeNotifier {
 
   // User management
   void setUser(User user) {
+    _currentUser = user;
+    notifyListeners();
+  }
+
+  void updateUser(User user) {
     _currentUser = user;
     notifyListeners();
   }
@@ -57,14 +63,32 @@ class AppState extends ChangeNotifier {
 
   // Declutter process
   void keepItem(DeclutterItem item) {
-    _keptItems.add(item);
+    final keptItem = item.copyWith(isKept: true);
+    _keptItems.add(keptItem);
     _items.removeWhere((i) => i.id == item.id);
     notifyListeners();
   }
 
   void discardItem(DeclutterItem item) {
-    _discardedItems.add(item);
+    final discardedItem = item.copyWith(isDiscarded: true);
+    _discardedItems.add(discardedItem);
     _items.removeWhere((i) => i.id == item.id);
+    notifyListeners();
+  }
+
+  void completeSession() {
+    if (_currentUser != null && !_sessionCompleted) {
+      final currentDiscardedCount = _discardedItems.length;
+      final currentKeptCount = _keptItems.length;
+      final totalItemsInSession = currentDiscardedCount + currentKeptCount;
+      
+      _currentUser = _currentUser!.copyWith(
+        totalSessions: _currentUser!.totalSessions + 1,
+        totalItemsLetGo: _currentUser!.totalItemsLetGo + currentDiscardedCount,
+        totalItemsEvaluated: _currentUser!.totalItemsEvaluated + totalItemsInSession,
+      );
+      _sessionCompleted = true;
+    }
     notifyListeners();
   }
 
@@ -72,10 +96,17 @@ class AppState extends ChangeNotifier {
     _items.clear();
     _keptItems.clear();
     _discardedItems.clear();
+    _sessionCompleted = false;
+    notifyListeners();
+  }
+
+  void startNewSession() {
+    _sessionCompleted = false;
     notifyListeners();
   }
 
   // Statistics
   int get totalSessions => _currentUser?.totalSessions ?? 0;
-  int get totalItemsLetGo => _discardedItems.length;
+  int get totalItemsLetGo => _currentUser?.totalItemsLetGo ?? 0;
+  int get totalItemsEvaluated => _currentUser?.totalItemsEvaluated ?? 0;
 }

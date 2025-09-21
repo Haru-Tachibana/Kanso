@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/theme_service.dart';
 
 class AppTheme {
   // Kanso grayscale palette (exactly 5 shades as specified)
@@ -8,20 +9,28 @@ class AppTheme {
   static const Color lightGray = Color(0xFFBBBBBB);      // #BBBBBB
   static const Color pureWhite = Color(0xFFFFFFFF);      // #FFFFFF
 
-  static ThemeData get lightTheme {
+  static ThemeData createTheme(ThemeService themeService) {
+    final palette = themeService.generatedPalette;
+    final pureBlack = palette[0];
+    final darkGray = palette[1];
+    final mediumGray = palette[2];
+    final lightGray = palette[3];
+    final pureWhite = palette[4];
+
     return ThemeData(
       useMaterial3: true,
-      colorScheme: const ColorScheme.light(
+      colorScheme: ColorScheme.light(
         primary: pureBlack,
         secondary: darkGray,
-        surface: pureWhite,
+        surface: lightGray, // Changed to light grey
         background: pureWhite,
         onPrimary: pureWhite,
         onSecondary: pureWhite,
         onSurface: pureBlack,
         onBackground: pureBlack,
       ),
-      textTheme: const TextTheme(
+      scaffoldBackgroundColor: lightGray, // Changed to light grey
+      textTheme: TextTheme(
         displayLarge: TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.w500, // Medium weight for titles
@@ -111,7 +120,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: pureBlack,
-          side: const BorderSide(color: pureBlack, width: 1),
+          side: BorderSide(color: pureBlack, width: 1),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.zero,
           ),
@@ -125,15 +134,15 @@ class AppTheme {
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        border: const OutlineInputBorder(
+        border: OutlineInputBorder(
           borderSide: BorderSide(color: lightGray),
           borderRadius: BorderRadius.zero,
         ),
-        enabledBorder: const OutlineInputBorder(
+        enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: lightGray),
           borderRadius: BorderRadius.zero,
         ),
-        focusedBorder: const OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(color: pureBlack, width: 2),
           borderRadius: BorderRadius.zero,
         ),
@@ -141,15 +150,15 @@ class AppTheme {
         fillColor: pureWhite,
         filled: true,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: pureWhite,
         elevation: 0, // No shadows
-        shape: const RoundedRectangleBorder(
+        shape: RoundedRectangleBorder(
           side: BorderSide(color: lightGray, width: 1),
           borderRadius: BorderRadius.zero,
         ),
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: pureWhite,
         foregroundColor: pureBlack,
         elevation: 0, // No shadows
@@ -161,7 +170,7 @@ class AppTheme {
           fontFamily: 'SF Pro Display',
         ),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarTheme(
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: pureWhite,
         selectedItemColor: pureBlack,
         unselectedItemColor: mediumGray,

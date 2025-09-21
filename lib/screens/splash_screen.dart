@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
+import '../services/animation_service.dart';
 import '../theme/app_theme.dart';
 import 'auth/login_screen.dart';
 import 'main_navigation.dart';
@@ -16,8 +17,10 @@ class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _rippleController;
   late AnimationController _fadeController;
+  late AnimationController _scaleController;
   late Animation<double> _rippleAnimation;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
@@ -25,35 +28,34 @@ class _SplashScreenState extends State<SplashScreen>
     
     // Ripple animation controller
     _rippleController = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: AnimationService.slowFlowDuration,
       vsync: this,
     );
     
     // Fade animation controller
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: AnimationService.flowDuration,
       vsync: this,
     );
 
-    _rippleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _rippleController,
-      curve: Curves.easeInOut,
-    ));
+    // Scale animation controller
+    _scaleController = AnimationController(
+      duration: AnimationService.quickFlowDuration,
+      vsync: this,
+    );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeIn,
-    ));
+    _rippleAnimation = AnimationService.createRippleFlow(_rippleController);
+    _fadeAnimation = AnimationService.createFadeInFlow(_fadeController);
+    _scaleAnimation = AnimationService.createScaleFlow(_scaleController);
 
-    // Start animations
-    _rippleController.repeat(reverse: true);
+    // Start animations with flowing sequence
     _fadeController.forward();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      _scaleController.forward();
+    });
+    Future.delayed(const Duration(milliseconds: 600), () {
+      _rippleController.repeat(reverse: true);
+    });
 
     // Navigate after splash duration
     Future.delayed(const Duration(seconds: 3), () {
@@ -78,6 +80,7 @@ class _SplashScreenState extends State<SplashScreen>
   void dispose() {
     _rippleController.dispose();
     _fadeController.dispose();
+    _scaleController.dispose();
     super.dispose();
   }
 
@@ -89,20 +92,23 @@ class _SplashScreenState extends State<SplashScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Karesansui-inspired ripple logo
+            // Karesansui-inspired ripple logo with flow animations
             AnimatedBuilder(
-              animation: _rippleAnimation,
+              animation: Listenable.merge([_rippleAnimation, _scaleAnimation]),
               builder: (context, child) {
-                return CustomPaint(
-                  size: const Size(120, 120),
-                  painter: RipplePainter(
-                    progress: _rippleAnimation.value,
+                return Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: CustomPaint(
+                    size: const Size(120, 120),
+                    painter: RipplePainter(
+                      progress: _rippleAnimation.value,
+                    ),
                   ),
                 );
               },
             ),
             const SizedBox(height: 40),
-            // App title with fade animation
+            // App title with flowing fade animation
             AnimatedBuilder(
               animation: _fadeAnimation,
               builder: (context, child) {

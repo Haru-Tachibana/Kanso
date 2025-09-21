@@ -4,6 +4,7 @@ class User {
   final String name;
   final int totalSessions;
   final int totalItemsLetGo;
+  final int totalItemsEvaluated;
   final DateTime createdAt;
   final bool isChinese;
 
@@ -13,6 +14,7 @@ class User {
     required this.name,
     this.totalSessions = 0,
     this.totalItemsLetGo = 0,
+    this.totalItemsEvaluated = 0,
     required this.createdAt,
     this.isChinese = false,
   });
@@ -23,6 +25,7 @@ class User {
     String? name,
     int? totalSessions,
     int? totalItemsLetGo,
+    int? totalItemsEvaluated,
     DateTime? createdAt,
     bool? isChinese,
   }) {
@@ -32,6 +35,7 @@ class User {
       name: name ?? this.name,
       totalSessions: totalSessions ?? this.totalSessions,
       totalItemsLetGo: totalItemsLetGo ?? this.totalItemsLetGo,
+      totalItemsEvaluated: totalItemsEvaluated ?? this.totalItemsEvaluated,
       createdAt: createdAt ?? this.createdAt,
       isChinese: isChinese ?? this.isChinese,
     );
@@ -44,6 +48,7 @@ class User {
       'name': name,
       'totalSessions': totalSessions,
       'totalItemsLetGo': totalItemsLetGo,
+      'totalItemsEvaluated': totalItemsEvaluated,
       'createdAt': createdAt.toIso8601String(),
       'isChinese': isChinese,
     };
@@ -56,6 +61,7 @@ class User {
       name: json['name'],
       totalSessions: json['totalSessions'] ?? 0,
       totalItemsLetGo: json['totalItemsLetGo'] ?? 0,
+      totalItemsEvaluated: json['totalItemsEvaluated'] ?? 0,
       createdAt: DateTime.parse(json['createdAt']),
       isChinese: json['isChinese'] ?? false,
     );

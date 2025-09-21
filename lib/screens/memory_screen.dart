@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
+import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
 import '../models/declutter_item.dart';
 
@@ -38,15 +39,17 @@ class _MemoryScreenState extends State<MemoryScreen> {
           final discardedItems = appState.discardedItems;
 
           if (discardedItems.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.archive_outlined,
-                    size: 64,
-                    color: AppTheme.lightGray,
-                  ),
+            return Consumer<ThemeService>(
+              builder: (context, themeService, child) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.archive_outlined,
+                        size: 64,
+                        color: themeService.memoryIconBg,
+                      ),
                   const SizedBox(height: 16),
                   Text(
                     'No memories yet',
@@ -61,8 +64,10 @@ class _MemoryScreenState extends State<MemoryScreen> {
                       color: AppTheme.lightGray,
                     ),
                   ),
-                ],
-              ),
+                    ],
+                  ),
+                );
+              },
             );
           }
 

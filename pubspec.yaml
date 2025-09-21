@@ -16,6 +16,10 @@ dependencies:
   image_picker: ^1.0.4
   shared_preferences: ^2.2.2
   intl: ^0.18.1
+  # Firebase dependencies temporarily removed for web build
+  # firebase_core: ^2.24.2
+  # cloud_firestore: ^4.13.6
+  # firebase_auth: ^4.15.3
 
 dev_dependencies:
   flutter_test:

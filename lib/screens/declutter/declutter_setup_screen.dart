@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/app_state.dart';
+import '../../services/theme_service.dart';
 import '../../models/declutter_item.dart';
 import '../../theme/app_theme.dart';
 import 'declutter_process_screen.dart';
@@ -49,6 +50,9 @@ class _DeclutterSetupScreenState extends State<DeclutterSetupScreen> {
       );
       return;
     }
+
+    // Start a new session
+    appState.startNewSession();
 
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -103,9 +107,17 @@ class _DeclutterSetupScreenState extends State<DeclutterSetupScreen> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      ElevatedButton(
-                        onPressed: _addItem,
-                        child: const Icon(Icons.add),
+                      Consumer<ThemeService>(
+                        builder: (context, themeService, child) {
+                          return ElevatedButton(
+                            onPressed: _addItem,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: themeService.primaryButtonBg,
+                              foregroundColor: AppTheme.pureBlack,
+                            ),
+                            child: const Icon(Icons.add),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -115,15 +127,17 @@ class _DeclutterSetupScreenState extends State<DeclutterSetupScreen> {
                 // Items list
                 Expanded(
                   child: appState.items.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.inventory_2_outlined,
-                                size: 64,
-                                color: AppTheme.lightGray,
-                              ),
+                      ? Consumer<ThemeService>(
+                          builder: (context, themeService, child) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.inventory_2_outlined,
+                                    size: 64,
+                                    color: themeService.secondaryButtonBg,
+                                  ),
                               const SizedBox(height: 16),
                               Text(
                                 'No items added yet',
@@ -138,8 +152,10 @@ class _DeclutterSetupScreenState extends State<DeclutterSetupScreen> {
                                   color: AppTheme.lightGray,
                                 ),
                               ),
-                            ],
-                          ),
+                                ],
+                              ),
+                            );
+                          },
                         )
                       : ListView.builder(
                           itemCount: appState.items.length,
@@ -169,21 +185,27 @@ class _DeclutterSetupScreenState extends State<DeclutterSetupScreen> {
                 // Start button
                 if (appState.items.isNotEmpty) ...[
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _startDeclutter,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                      ),
-                      child: Text(
-                        'Start Decluttering (${appState.items.length} items)',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppTheme.pureWhite,
-                          fontWeight: FontWeight.w500,
+                  Consumer<ThemeService>(
+                    builder: (context, themeService, child) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _startDeclutter,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: themeService.primaryButtonBg,
+                            foregroundColor: AppTheme.pureBlack,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                          ),
+                          child: Text(
+                            'Start Decluttering (${appState.items.length} items)',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: AppTheme.pureBlack,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ],
               ],
