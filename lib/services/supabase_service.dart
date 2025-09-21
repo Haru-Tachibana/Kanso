@@ -40,8 +40,8 @@ class SupabaseService {
       
       // Fallback to hardcoded values for web deployment
       if (url == null || anonKey == null) {
-        url = 'https://bhouzasdujvzlwrgttmm.supabase.co';
-        anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJob3V6YXNkdWp2emx3cmd0dG1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0NTYzMjMsImV4cCI6MjA3NDAzMjMyM30.bHBsaRQisje9eXZSuZIl40XEeo98ifFLSUAQlLsGsuQ';
+        url = 'https://iyvzsyvwczoprjmcjclq.supabase.co';
+        anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5dnpzeXZ3Y3pvcHJqbWNqY2xxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0NjYxMjQsImV4cCI6MjA3NDA0MjEyNH0.bI3fZFrcapzKNeyTCDw0E0VVSVxq0D_baMgcQo1A_wA';
         print('Using hardcoded values for web deployment');
       }
       
