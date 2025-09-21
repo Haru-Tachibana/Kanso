@@ -40,10 +40,22 @@ class SupabaseService {
         throw Exception('Supabase environment variables not found');
       }
       
+      print('Initializing Supabase with URL: $url');
+      print('Anon Key: ${anonKey.substring(0, 20)}...');
+      
       await Supabase.initialize(
         url: url,
         anonKey: anonKey,
       );
+      
+      // Test the connection
+      try {
+        await client.from('users').select().limit(1);
+        print('Supabase connection test successful');
+      } catch (e) {
+        print('Supabase connection test failed: $e');
+        throw Exception('Supabase project may be paused or URL is incorrect. Check your Supabase dashboard.');
+      }
       
       print('Supabase initialized successfully with URL: $url');
     } catch (e) {
