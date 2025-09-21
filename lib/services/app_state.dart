@@ -9,6 +9,8 @@ class AppState extends ChangeNotifier {
   List<DeclutterItem> _items = [];
   List<DeclutterItem> _keptItems = [];
   List<DeclutterItem> _discardedItems = [];
+  List<DeclutterItem> _currentSessionKeptItems = [];
+  List<DeclutterItem> _currentSessionDiscardedItems = [];
   bool _isChinese = false;
   bool _sessionCompleted = false;
 
@@ -17,6 +19,8 @@ class AppState extends ChangeNotifier {
   List<DeclutterItem> get items => _items;
   List<DeclutterItem> get keptItems => _keptItems;
   List<DeclutterItem> get discardedItems => _discardedItems;
+  List<DeclutterItem> get currentSessionKeptItems => _currentSessionKeptItems;
+  List<DeclutterItem> get currentSessionDiscardedItems => _currentSessionDiscardedItems;
   bool get isChinese => _isChinese;
 
   // User management
@@ -133,8 +137,9 @@ class AppState extends ChangeNotifier {
   Future<void> keepItem(DeclutterItem item) async {
     final keptItem = item.copyWith(isKept: true);
     _keptItems.add(keptItem);
+    _currentSessionKeptItems.add(keptItem);
     _items.removeWhere((i) => i.id == item.id);
-    if (_currentUser != null) {
+    if (_currentUser != null && !_currentUser!.id.startsWith('guest_')) {
       await SupabaseService.saveDeclutterItem(keptItem, _currentUser!.id);
     }
     notifyListeners();
@@ -143,8 +148,9 @@ class AppState extends ChangeNotifier {
   Future<void> discardItem(DeclutterItem item) async {
     final discardedItem = item.copyWith(isDiscarded: true);
     _discardedItems.add(discardedItem);
+    _currentSessionDiscardedItems.add(discardedItem);
     _items.removeWhere((i) => i.id == item.id);
-    if (_currentUser != null) {
+    if (_currentUser != null && !_currentUser!.id.startsWith('guest_')) {
       await SupabaseService.saveDeclutterItem(discardedItem, _currentUser!.id);
     }
     notifyListeners();
@@ -152,14 +158,15 @@ class AppState extends ChangeNotifier {
 
   void completeSession() {
     if (_currentUser != null && !_sessionCompleted) {
-      final currentDiscardedCount = _discardedItems.length;
-      final currentKeptCount = _keptItems.length;
-      final totalItemsInSession = currentDiscardedCount + currentKeptCount;
+      // Count items from current session only
+      final sessionDiscardedCount = _currentSessionDiscardedItems.length;
+      final sessionKeptCount = _currentSessionKeptItems.length;
+      final totalItemsInSession = sessionDiscardedCount + sessionKeptCount;
       
       _currentUser = _currentUser!.copyWith(
-        totalSessions: _currentUser!.totalSessions + 1,
-        totalItemsLetGo: _currentUser!.totalItemsLetGo + currentDiscardedCount,
-        totalItemsEvaluated: _currentUser!.totalItemsEvaluated + totalItemsInSession,
+        totalSessions: (_currentUser!.totalSessions ?? 0) + 1,
+        totalItemsLetGo: (_currentUser!.totalItemsLetGo ?? 0) + sessionDiscardedCount,
+        totalItemsEvaluated: (_currentUser!.totalItemsEvaluated ?? 0) + totalItemsInSession,
       );
       _sessionCompleted = true;
     }
@@ -169,6 +176,8 @@ class AppState extends ChangeNotifier {
   void clearSession() {
     _items.clear();
     _keptItems.clear();
+    _currentSessionKeptItems.clear();
+    _currentSessionDiscardedItems.clear();
     // Don't clear discarded items - they contain memories
     // _discardedItems.clear();
     _sessionCompleted = false;

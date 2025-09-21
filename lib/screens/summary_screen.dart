@@ -48,19 +48,19 @@ class SummaryScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
 
-                // Kept items section
-                if (appState.keptItems.isNotEmpty) ...[
+                // Kept items section (current session only)
+                if (appState.currentSessionKeptItems.isNotEmpty) ...[
                   Text(
-                    'Kept (${appState.keptItems.length})',
+                    'Kept (${appState.currentSessionKeptItems.length})',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 16),
                   Expanded(
                     flex: 1,
                     child: ListView.builder(
-                      itemCount: appState.keptItems.length,
+                      itemCount: appState.currentSessionKeptItems.length,
                       itemBuilder: (context, index) {
-                        final item = appState.keptItems[index];
+                        final item = appState.currentSessionKeptItems[index];
                         return _ItemCard(
                           item: item,
                           isKept: true,
@@ -70,14 +70,14 @@ class SummaryScreen extends StatelessWidget {
                   ),
                 ],
 
-                // Discarded items section
-                if (appState.discardedItems.isNotEmpty) ...[
+                // Discarded items section (current session only)
+                if (appState.currentSessionDiscardedItems.isNotEmpty) ...[
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Let Go (${appState.discardedItems.length})',
+                        'Let Go (${appState.currentSessionDiscardedItems.length})',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       TextButton.icon(
@@ -86,7 +86,7 @@ class SummaryScreen extends StatelessWidget {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => _MemoryCreationScreen(
-                                discardedItems: appState.discardedItems,
+                                discardedItems: appState.currentSessionDiscardedItems,
                               ),
                             ),
                           );
@@ -100,9 +100,9 @@ class SummaryScreen extends StatelessWidget {
                   Expanded(
                     flex: 1,
                     child: ListView.builder(
-                      itemCount: appState.discardedItems.length,
+                      itemCount: appState.currentSessionDiscardedItems.length,
                       itemBuilder: (context, index) {
-                        final item = appState.discardedItems[index];
+                        final item = appState.currentSessionDiscardedItems[index];
                         return _ItemCard(
                           item: item,
                           isKept: false,
@@ -493,15 +493,22 @@ class _MemoryCreationScreenState extends State<_MemoryCreationScreen> {
                             // Save memories to app state
                             final appState = Provider.of<AppState>(context, listen: false);
                             
-                            // Update discarded items with memories and photos
+                            // Only save items that have memories or photos (user explicitly chose to remember)
                             for (final item in widget.discardedItems) {
-                              if (_memories.containsKey(item.id) || _photos.containsKey(item.id)) {
+                              if (_memories.containsKey(item.id) && _memories[item.id]!.isNotEmpty) {
                                 final updatedItem = item.copyWith(
                                   memo: _memories[item.id],
                                   photoPath: _photos[item.id],
                                 );
                                 appState.updateItem(updatedItem);
                                 print('Updated item ${item.id} with memo: ${_memories[item.id]} and photo: ${_photos[item.id]}');
+                              } else if (_photos.containsKey(item.id) && _photos[item.id] != null) {
+                                final updatedItem = item.copyWith(
+                                  memo: _memories[item.id] ?? '',
+                                  photoPath: _photos[item.id],
+                                );
+                                appState.updateItem(updatedItem);
+                                print('Updated item ${item.id} with photo: ${_photos[item.id]}');
                               }
                             }
                             print('Total discarded items after save: ${appState.discardedItems.length}');
