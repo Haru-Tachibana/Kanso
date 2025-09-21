@@ -140,6 +140,33 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  Future<void> _handleGuestMode() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Create a guest user
+    final guestUser = User(
+      id: 'guest_${DateTime.now().millisecondsSinceEpoch}',
+      email: 'guest@kanso.app',
+      name: 'Guest User',
+      createdAt: DateTime.now(),
+    );
+
+    final appState = Provider.of<AppState>(context, listen: false);
+    await appState.setUser(guestUser);
+
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainNavigation()),
+      );
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -300,6 +327,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? 'Already have an account? Sign In'
                         : 'Don\'t have an account? Sign Up',
                     style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Guest mode button
+                TextButton(
+                  onPressed: _handleGuestMode,
+                  child: Text(
+                    'Continue as Guest',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.mediumGray,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
               ],

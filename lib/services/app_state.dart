@@ -23,13 +23,19 @@ class AppState extends ChangeNotifier {
   Future<void> setUser(User user) async {
     print('Setting user: ${user.name} (${user.id})');
     _currentUser = user;
-    try {
-      await SupabaseService.saveUser(user);
-      print('User saved to Supabase successfully');
-    } catch (e) {
-      print('Error saving user to Supabase: $e');
+    
+    // Only save to Supabase if not a guest user
+    if (!user.id.startsWith('guest_')) {
+      try {
+        await SupabaseService.saveUser(user);
+        print('User saved to Supabase successfully');
+      } catch (e) {
+        print('Error saving user to Supabase: $e');
+      }
+      await _loadUserData();
+    } else {
+      print('Guest user - skipping Supabase save');
     }
-    await _loadUserData();
     notifyListeners();
   }
 
@@ -77,7 +83,7 @@ class AppState extends ChangeNotifier {
     print('Adding item: ${item.title}');
     print('Current user: ${_currentUser?.name} (${_currentUser?.id})');
     _items.add(item);
-    if (_currentUser != null) {
+    if (_currentUser != null && !_currentUser!.id.startsWith('guest_')) {
       try {
         await SupabaseService.saveDeclutterItem(item, _currentUser!.id);
         print('Item saved to Supabase successfully');
@@ -85,7 +91,7 @@ class AppState extends ChangeNotifier {
         print('Error saving item to Supabase: $e');
       }
     } else {
-      print('No current user - item not saved to database');
+      print('Guest user or no current user - item saved locally only');
     }
     notifyListeners();
   }
