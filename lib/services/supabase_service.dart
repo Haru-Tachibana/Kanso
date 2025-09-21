@@ -60,13 +60,13 @@ class SupabaseService {
       // Set the client after initialization
       _client = Supabase.instance.client;
       
-      // Test the connection
+      // Test the connection (optional - don't fail initialization if this fails)
       try {
         await client.from('users').select().limit(1);
         print('Supabase connection test successful');
       } catch (e) {
         print('Supabase connection test failed: $e');
-        throw Exception('Supabase project may be paused or URL is incorrect. Check your Supabase dashboard.');
+        print('Continuing with initialization - connection will be tested during first use');
       }
       
       print('Supabase initialized successfully with URL: $url');
@@ -216,9 +216,6 @@ class SupabaseService {
         throw Exception('Supabase not initialized. Please restart the app.');
       }
       
-      // Test connection first
-      await client.from('users').select().limit(1);
-      
       final response = await client.auth.signUp(
         email: email,
         password: password,
@@ -240,9 +237,6 @@ class SupabaseService {
       if (!isInitialized) {
         throw Exception('Supabase not initialized. Please restart the app.');
       }
-      
-      // Test connection first
-      await client.from('users').select().limit(1);
       
       final response = await client.auth.signInWithPassword(
         email: email,
@@ -270,6 +264,11 @@ class SupabaseService {
 
   static kanso_user.User? getCurrentUser() {
     try {
+      if (!isInitialized) {
+        print('Supabase not initialized');
+        return null;
+      }
+      
       final session = client.auth.currentSession;
       if (session?.user != null) {
         return kanso_user.User(
