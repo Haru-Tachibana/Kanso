@@ -188,6 +188,9 @@ class SupabaseService {
   // Authentication
   static Future<AuthResponse> signUp(String email, String password, String name) async {
     try {
+      // Test connection first
+      await client.from('users').select().limit(1);
+      
       final response = await client.auth.signUp(
         email: email,
         password: password,
@@ -197,12 +200,18 @@ class SupabaseService {
       return response;
     } catch (e) {
       print('Error signing up: $e');
+      if (e.toString().contains('DOCTYPE') || e.toString().contains('HTML')) {
+        throw Exception('Database not set up. Please run the SQL setup in Supabase dashboard.');
+      }
       rethrow;
     }
   }
 
   static Future<AuthResponse> signIn(String email, String password) async {
     try {
+      // Test connection first
+      await client.from('users').select().limit(1);
+      
       final response = await client.auth.signInWithPassword(
         email: email,
         password: password,
@@ -211,6 +220,9 @@ class SupabaseService {
       return response;
     } catch (e) {
       print('Error signing in: $e');
+      if (e.toString().contains('DOCTYPE') || e.toString().contains('HTML')) {
+        throw Exception('Database not set up. Please run the SQL setup in Supabase dashboard.');
+      }
       rethrow;
     }
   }
