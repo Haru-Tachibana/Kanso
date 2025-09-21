@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../models/user.dart';
 import '../models/declutter_item.dart';
+import 'supabase_service.dart';
 
 class AppState extends ChangeNotifier {
   User? _currentUser;
@@ -18,22 +20,44 @@ class AppState extends ChangeNotifier {
   bool get isChinese => _isChinese;
 
   // User management
-  void setUser(User user) {
+  Future<void> setUser(User user) async {
     _currentUser = user;
+    await SupabaseService.saveUser(user);
+    await _loadUserData();
     notifyListeners();
   }
 
-  void updateUser(User user) {
+  Future<void> updateUser(User user) async {
     _currentUser = user;
+    await SupabaseService.updateUser(user);
     notifyListeners();
   }
 
-  void logout() {
+  Future<void> logout() async {
+    await SupabaseService.signOut();
     _currentUser = null;
     _items.clear();
     _keptItems.clear();
     _discardedItems.clear();
+    _sessionCompleted = false;
     notifyListeners();
+  }
+
+  Future<void> _loadUserData() async {
+    if (_currentUser == null) return;
+    
+    try {
+      _items = await SupabaseService.getDeclutterItems(_currentUser!.id);
+      _keptItems = await SupabaseService.getKeptItems(_currentUser!.id);
+      _discardedItems = await SupabaseService.getDiscardedItems(_currentUser!.id);
+      print('Loaded data from Supabase: ${_items.length} items, ${_keptItems.length} kept, ${_discardedItems.length} discarded');
+    } catch (e) {
+      print('Error loading user data from Supabase: $e');
+      // Initialize empty lists if Supabase fails
+      _items = [];
+      _keptItems = [];
+      _discardedItems = [];
+    }
   }
 
   // Language management
@@ -43,36 +67,65 @@ class AppState extends ChangeNotifier {
   }
 
   // Item management
-  void addItem(DeclutterItem item) {
+  Future<void> addItem(DeclutterItem item) async {
     _items.add(item);
+    if (_currentUser != null) {
+      await SupabaseService.saveDeclutterItem(item, _currentUser!.id);
+    }
     notifyListeners();
   }
 
-  void removeItem(String id) {
+  Future<void> removeItem(String id) async {
     _items.removeWhere((item) => item.id == id);
+    if (_currentUser != null) {
+      await SupabaseService.deleteDeclutterItem(id, _currentUser!.id);
+    }
     notifyListeners();
   }
 
-  void updateItem(DeclutterItem updatedItem) {
+  Future<void> updateItem(DeclutterItem updatedItem) async {
+    // Update in current items list
     final index = _items.indexWhere((item) => item.id == updatedItem.id);
     if (index != -1) {
       _items[index] = updatedItem;
-      notifyListeners();
     }
-  }
-
-  // Declutter process
-  void keepItem(DeclutterItem item) {
-    final keptItem = item.copyWith(isKept: true);
-    _keptItems.add(keptItem);
-    _items.removeWhere((i) => i.id == item.id);
+    
+    // Update in kept items list
+    final keptIndex = _keptItems.indexWhere((item) => item.id == updatedItem.id);
+    if (keptIndex != -1) {
+      _keptItems[keptIndex] = updatedItem;
+    }
+    
+    // Update in discarded items list
+    final discardedIndex = _discardedItems.indexWhere((item) => item.id == updatedItem.id);
+    if (discardedIndex != -1) {
+      _discardedItems[discardedIndex] = updatedItem;
+    }
+    
+    if (_currentUser != null) {
+      await SupabaseService.updateDeclutterItem(updatedItem, _currentUser!.id);
+    }
     notifyListeners();
   }
 
-  void discardItem(DeclutterItem item) {
+  // Declutter process
+  Future<void> keepItem(DeclutterItem item) async {
+    final keptItem = item.copyWith(isKept: true);
+    _keptItems.add(keptItem);
+    _items.removeWhere((i) => i.id == item.id);
+    if (_currentUser != null) {
+      await SupabaseService.saveDeclutterItem(keptItem, _currentUser!.id);
+    }
+    notifyListeners();
+  }
+
+  Future<void> discardItem(DeclutterItem item) async {
     final discardedItem = item.copyWith(isDiscarded: true);
     _discardedItems.add(discardedItem);
     _items.removeWhere((i) => i.id == item.id);
+    if (_currentUser != null) {
+      await SupabaseService.saveDeclutterItem(discardedItem, _currentUser!.id);
+    }
     notifyListeners();
   }
 

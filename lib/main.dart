@@ -1,24 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 import 'services/app_state.dart';
 import 'services/theme_service.dart';
+import 'services/supabase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase only for mobile platforms
-  if (!kIsWeb) {
-    try {
-      // Firebase will be initialized here for mobile
-      print('Mobile platform detected - Firebase will be initialized');
-    } catch (e) {
-      print('Firebase initialization failed: $e');
-    }
-  } else {
-    print('Web platform detected - using local storage');
+  // Load environment variables
+  try {
+    await dotenv.load(fileName: ".env");
+    print('Environment variables loaded successfully');
+  } catch (e) {
+    print('Failed to load environment variables: $e');
+  }
+  
+  // Initialize Supabase
+  try {
+    await SupabaseService.initialize();
+    print('Supabase initialized successfully');
+  } catch (e) {
+    print('Supabase initialization failed: $e');
+    // App will still work with local storage as fallback
   }
   
   runApp(const KansoApp());

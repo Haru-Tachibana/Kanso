@@ -11,15 +11,12 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   provider: ^6.0.5
-  sqflite: ^2.3.0
-  path: ^1.8.3
   image_picker: ^1.0.4
   shared_preferences: ^2.2.2
   intl: ^0.18.1
-  # Firebase dependencies temporarily removed for web build
-  # firebase_core: ^2.24.2
-  # cloud_firestore: ^4.13.6
-  # firebase_auth: ^4.15.3
+  supabase_flutter: ^2.0.0
+  uuid: ^4.2.1
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -30,3 +27,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - .env

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
 import '../services/theme_service.dart';
@@ -172,17 +173,7 @@ class _MemoryCard extends StatelessWidget {
               width: double.infinity,
               color: AppTheme.lightGray.withOpacity(0.3),
               child: item.photoPath != null
-                  ? Image.file(
-                      File(item.photoPath!),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(
-                          Icons.photo,
-                          size: 32,
-                          color: AppTheme.mediumGray,
-                        );
-                      },
-                    )
+                  ? _buildImageWidget(item.photoPath!)
                   : const Icon(
                       Icons.image_outlined,
                       size: 32,
@@ -231,6 +222,45 @@ class _MemoryCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildImageWidget(String photoPath) {
+    if (kIsWeb) {
+      // For web, try to use the path as a data URL or show placeholder
+      if (photoPath.startsWith('data:') || photoPath.startsWith('http')) {
+        return Image.network(
+          photoPath,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(
+              Icons.photo,
+              size: 32,
+              color: AppTheme.mediumGray,
+            );
+          },
+        );
+      } else {
+        // For web file paths, show placeholder
+        return const Icon(
+          Icons.photo,
+          size: 32,
+          color: AppTheme.mediumGray,
+        );
+      }
+    } else {
+      // For mobile, use Image.file
+      return Image.file(
+        File(photoPath),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(
+            Icons.photo,
+            size: 32,
+            color: AppTheme.mediumGray,
+          );
+        },
+      );
+    }
   }
 
   String _formatDate(DateTime date) {

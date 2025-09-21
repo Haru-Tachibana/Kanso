@@ -1,7 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../services/app_state.dart';
 import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
@@ -267,6 +269,52 @@ class _MemoryCreationScreenState extends State<_MemoryCreationScreen> {
   final Map<String, String> _photos = {};
   final ImagePicker _picker = ImagePicker();
 
+  void _showTopNotification(BuildContext context, String message) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 60,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppTheme.mediumGray,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: AppTheme.pureWhite,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
+    );
+    
+    overlay.insert(overlayEntry);
+    
+    // Remove after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
   Future<void> _pickPhoto(String itemId) async {
     try {
       // Show dialog to choose between camera and gallery
@@ -303,9 +351,18 @@ class _MemoryCreationScreenState extends State<_MemoryCreationScreen> {
         );
         
         if (image != null) {
-          setState(() {
-            _photos[itemId] = image.path;
-          });
+          // For web, convert to data URL
+          if (kIsWeb) {
+            final bytes = await image.readAsBytes();
+            final base64 = base64Encode(bytes);
+            setState(() {
+              _photos[itemId] = 'data:image/jpeg;base64,$base64';
+            });
+          } else {
+            setState(() {
+              _photos[itemId] = image.path;
+            });
+          }
         }
       }
     } catch (e) {
@@ -444,27 +501,14 @@ class _MemoryCreationScreenState extends State<_MemoryCreationScreen> {
                                   photoPath: _photos[item.id],
                                 );
                                 appState.updateItem(updatedItem);
+                                print('Updated item ${item.id} with memo: ${_memories[item.id]} and photo: ${_photos[item.id]}');
                               }
                             }
+                            print('Total discarded items after save: ${appState.discardedItems.length}');
                             
                             Navigator.of(context).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text('Memories saved!'),
-                                duration: const Duration(seconds: 2),
-                                behavior: SnackBarBehavior.floating,
-                                margin: const EdgeInsets.only(
-                                  top: 60,
-                                  left: 20,
-                                  right: 20,
-                                  bottom: 20,
-                                ),
-                                backgroundColor: AppTheme.mediumGray,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            );
+                            // Show notification at top using Overlay
+                            _showTopNotification(context, 'Memories saved!');
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: themeService.saveButtonBg,
