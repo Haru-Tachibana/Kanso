@@ -1,13 +1,16 @@
 {
     "name": "Kanso - Simplicity in Living",
     "short_name": "Kanso",
-    "start_url": ".",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#FFFFFF",
     "theme_color": "#777777",
     "description": "A minimalist decluttering app inspired by Japanese Zen rock gardens",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
+    "scope": "/",
+    "lang": "en",
+    "categories": ["lifestyle", "productivity", "utilities"],
     "icons": [
         {
             "src": "icons/Icon-192.png",
