@@ -7,12 +7,11 @@ echo "🚀 Starting Kanso build process..."
 
 # Install Flutter
 echo "📦 Installing Flutter..."
-cd /opt/build/repo
 
 # Download and install Flutter
 wget -O flutter_linux.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.4-stable.tar.xz
 tar xf flutter_linux.tar.xz
-export PATH="$PATH:/opt/build/repo/flutter/bin"
+export PATH="$PATH:$(pwd)/flutter/bin"
 
 # Verify Flutter installation
 flutter --version
@@ -29,3 +28,5 @@ echo "🔨 Building Flutter web app..."
 flutter build web --release
 
 echo "✅ Build completed successfully!"
+echo "📁 Build output directory:"
+ls -la build/web/

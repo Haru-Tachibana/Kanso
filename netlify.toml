@@ -1,6 +1,6 @@
 [build]
   publish = "build/web"
-  command = "echo 'Using pre-built web app'"
+  command = "curl -fsSL https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.4-stable.tar.xz | tar -xJ && export PATH=\"$PATH:$(pwd)/flutter/bin\" && flutter config --enable-web && flutter pub get && flutter build web --release"
 
 [build.environment]
   SUPABASE_URL = "https://bhouzasdujvzlwrgttmm.supabase.co"
