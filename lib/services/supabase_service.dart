@@ -4,7 +4,16 @@ import '../models/user.dart' as kanso_user;
 import '../models/declutter_item.dart';
 
 class SupabaseService {
-  static SupabaseClient get client => Supabase.instance.client;
+  static SupabaseClient? _client;
+  
+  static SupabaseClient get client {
+    if (_client == null) {
+      _client = Supabase.instance.client;
+    }
+    return _client!;
+  }
+  
+  static bool get isInitialized => _client != null;
 
   // Initialize Supabase
   static Future<void> initialize() async {
@@ -41,12 +50,15 @@ class SupabaseService {
       }
       
       print('Initializing Supabase with URL: $url');
-      print('Anon Key: ${anonKey.substring(0, 20)}...');
+      print('Anon Key: ${anonKey.length > 20 ? anonKey.substring(0, 20) + '...' : anonKey}');
       
       await Supabase.initialize(
         url: url,
         anonKey: anonKey,
       );
+      
+      // Set the client after initialization
+      _client = Supabase.instance.client;
       
       // Test the connection
       try {
@@ -200,6 +212,10 @@ class SupabaseService {
   // Authentication
   static Future<AuthResponse> signUp(String email, String password, String name) async {
     try {
+      if (!isInitialized) {
+        throw Exception('Supabase not initialized. Please restart the app.');
+      }
+      
       // Test connection first
       await client.from('users').select().limit(1);
       
@@ -221,6 +237,10 @@ class SupabaseService {
 
   static Future<AuthResponse> signIn(String email, String password) async {
     try {
+      if (!isInitialized) {
+        throw Exception('Supabase not initialized. Please restart the app.');
+      }
+      
       // Test connection first
       await client.from('users').select().limit(1);
       
