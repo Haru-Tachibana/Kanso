@@ -454,9 +454,14 @@ class _MemoryCreationScreenState extends State<_MemoryCreationScreen> {
                                 duration: const Duration(seconds: 2),
                                 behavior: SnackBarBehavior.floating,
                                 margin: const EdgeInsets.only(
-                                  top: 50,
+                                  top: 60,
                                   left: 20,
                                   right: 20,
+                                  bottom: 20,
+                                ),
+                                backgroundColor: AppTheme.mediumGray,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
                             );

@@ -95,7 +95,8 @@ class AppState extends ChangeNotifier {
   void clearSession() {
     _items.clear();
     _keptItems.clear();
-    _discardedItems.clear();
+    // Don't clear discarded items - they contain memories
+    // _discardedItems.clear();
     _sessionCompleted = false;
     notifyListeners();
   }

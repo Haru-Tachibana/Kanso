@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/app_state.dart';
@@ -164,17 +165,23 @@ class _MemoryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Photo placeholder
+          // Photo
           Expanded(
             flex: 2,
             child: Container(
               width: double.infinity,
               color: AppTheme.lightGray.withOpacity(0.3),
               child: item.photoPath != null
-                  ? const Icon(
-                      Icons.photo,
-                      size: 32,
-                      color: AppTheme.mediumGray,
+                  ? Image.file(
+                      File(item.photoPath!),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.photo,
+                          size: 32,
+                          color: AppTheme.mediumGray,
+                        );
+                      },
                     )
                   : const Icon(
                       Icons.image_outlined,
