@@ -9,11 +9,32 @@ class SupabaseService {
   // Initialize Supabase
   static Future<void> initialize() async {
     try {
-      // Load environment variables
-      await dotenv.load(fileName: ".env");
+      String? url;
+      String? anonKey;
       
-      final url = dotenv.env['SUPABASE_URL'];
-      final anonKey = dotenv.env['SUPABASE_ANON_KEY'];
+      // Try to load from .env file first
+      try {
+        await dotenv.load(fileName: ".env");
+        url = dotenv.env['SUPABASE_URL'];
+        anonKey = dotenv.env['SUPABASE_ANON_KEY'];
+        print('Loaded from .env file');
+      } catch (e) {
+        print('Could not load .env file, trying environment variables: $e');
+      }
+      
+      // If .env failed, try environment variables (for web deployment)
+      if (url == null || anonKey == null) {
+        url = const String.fromEnvironment('SUPABASE_URL');
+        anonKey = const String.fromEnvironment('SUPABASE_ANON_KEY');
+        print('Using environment variables');
+      }
+      
+      // Fallback to hardcoded values for web deployment
+      if (url == null || anonKey == null) {
+        url = 'https://bhouzasdujvzlwrgttmm.supabase.co';
+        anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJob3V6YXNkdWp2emx3cmd0dG1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0NTYzMjMsImV4cCI6MjA3NDAzMjMyM30.bHBsaRQisje9eXZSuZIl40XEeo98ifFLSUAQlLsGsuQ';
+        print('Using hardcoded values for web deployment');
+      }
       
       if (url == null || anonKey == null) {
         throw Exception('Supabase environment variables not found');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/app_state.dart';
+import '../../services/supabase_service.dart';
 import '../../models/user.dart';
 import '../../theme/app_theme.dart';
 import '../main_navigation.dart';
@@ -64,24 +65,74 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
-    // Simulate authentication delay
-    await Future.delayed(const Duration(seconds: 1));
-
-    // Create mock user for demo
-    final user = User(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      email: _emailController.text,
-      name: _isSignUp ? _nameController.text : _emailController.text.split('@')[0],
-      createdAt: DateTime.now(),
-    );
-
-    final appState = Provider.of<AppState>(context, listen: false);
-    appState.setUser(user);
-
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const MainNavigation()),
-      );
+    try {
+      final appState = Provider.of<AppState>(context, listen: false);
+      
+      if (_isSignUp) {
+        // Sign up with Supabase
+        final response = await SupabaseService.signUp(
+          _emailController.text,
+          _passwordController.text,
+          _nameController.text,
+        );
+        
+        if (response.user != null) {
+          // Create user profile
+          final user = User(
+            id: response.user!.id,
+            email: response.user!.email ?? _emailController.text,
+            name: _nameController.text,
+            createdAt: DateTime.parse(response.user!.createdAt),
+          );
+          
+          await appState.setUser(user);
+          
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const MainNavigation()),
+            );
+          }
+        }
+      } else {
+        // Sign in with Supabase
+        final response = await SupabaseService.signIn(
+          _emailController.text,
+          _passwordController.text,
+        );
+        
+        if (response.user != null) {
+          // Get or create user profile
+          User? user = await SupabaseService.getUser(response.user!.id);
+          
+          if (user == null) {
+            // Create new user profile if doesn't exist
+            user = User(
+              id: response.user!.id,
+              email: response.user!.email ?? _emailController.text,
+              name: response.user!.userMetadata?['name'] ?? _emailController.text.split('@')[0],
+              createdAt: DateTime.parse(response.user!.createdAt),
+            );
+            await SupabaseService.saveUser(user);
+          }
+          
+          await appState.setUser(user);
+          
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const MainNavigation()),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Authentication failed: $e'),
+            backgroundColor: AppTheme.mediumGray,
+          ),
+        );
+      }
     }
 
     setState(() {

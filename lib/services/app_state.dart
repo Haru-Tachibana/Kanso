@@ -21,8 +21,14 @@ class AppState extends ChangeNotifier {
 
   // User management
   Future<void> setUser(User user) async {
+    print('Setting user: ${user.name} (${user.id})');
     _currentUser = user;
-    await SupabaseService.saveUser(user);
+    try {
+      await SupabaseService.saveUser(user);
+      print('User saved to Supabase successfully');
+    } catch (e) {
+      print('Error saving user to Supabase: $e');
+    }
     await _loadUserData();
     notifyListeners();
   }
@@ -68,9 +74,18 @@ class AppState extends ChangeNotifier {
 
   // Item management
   Future<void> addItem(DeclutterItem item) async {
+    print('Adding item: ${item.title}');
+    print('Current user: ${_currentUser?.name} (${_currentUser?.id})');
     _items.add(item);
     if (_currentUser != null) {
-      await SupabaseService.saveDeclutterItem(item, _currentUser!.id);
+      try {
+        await SupabaseService.saveDeclutterItem(item, _currentUser!.id);
+        print('Item saved to Supabase successfully');
+      } catch (e) {
+        print('Error saving item to Supabase: $e');
+      }
+    } else {
+      print('No current user - item not saved to database');
     }
     notifyListeners();
   }
