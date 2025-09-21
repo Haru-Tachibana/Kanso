@@ -1,6 +1,6 @@
 [build]
   publish = "build/web"
-  command = "curl -fsSL https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.4-stable.tar.xz | tar -xJ && export PATH=\"$PATH:$(pwd)/flutter/bin\" && flutter config --enable-web && flutter pub get && flutter build web --release"
+  command = "curl -fsSL https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.35.4-stable.tar.xz | tar -xJ && export PATH=\"$PATH:$(pwd)/flutter/bin\" && flutter config --enable-web && flutter pub get && echo 'SUPABASE_URL=https://bhouzasdujvzlwrgttmm.supabase.co' > .env && echo 'SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJob3V6YXNkdWp2emx3cmd0dG1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0NTYzMjMsImV4cCI6MjA3NDAzMjMyM30.bHBsaRQisje9eXZSuZIl40XEeo98ifFLSUAQlLsGsuQ' >> .env && flutter build web --release"
 
 [build.environment]
   SUPABASE_URL = "https://bhouzasdujvzlwrgttmm.supabase.co"
